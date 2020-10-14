@@ -2,6 +2,7 @@ package br.com.zup.lojadepecas;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Scanner;
@@ -26,7 +27,7 @@ public class ProgramaPrincipal {
 
 	}
 
-	public static void menuSecundario() {
+	public static void menuPecas() {
 		System.out.println("\n(1) - Cadastrar nova peça");
 		System.out.println("(2) - Consultar peça");
 		System.out.println("(3) - Listar peças em estoque");
@@ -34,6 +35,13 @@ public class ProgramaPrincipal {
 		System.out.println("(5) - Listar peças por um modelo de carro");
 		System.out.println("(6) - Listar peças por categoria");
 		System.out.println("(7) - Remover peça do estoque");
+		System.out.println("(0) - Voltar para o menu principal");
+
+	}
+
+	public static void menuVendas() {
+		System.out.println("\n(1) Realizar venda");
+		System.out.println("(2) Relatório de vendas");
 		System.out.println("(0) - Voltar para o menu principal");
 
 	}
@@ -66,11 +74,19 @@ public class ProgramaPrincipal {
 	public static void consultarPecaPorCodigoBarra(Scanner teclado, PecasDAO pecasDao) {
 		System.out.print("\nInforme o número do código de barras: ");
 		String codigoBarra = teclado.next();
-		List<PecasPojo> pecasBd = pecasDao.consultarPecaPorCodigoBarra(codigoBarra);
+		
+		PecasPojo pecas = pecasDao.consultarPecaPorCodigoBarra(codigoBarra);
+		
 		System.out.printf("\nRelação das peças com código de barras %s: \n\n", codigoBarra);
-		for (PecasPojo pecas : pecasBd) {
-			System.out.println(pecas);
-		}
+		
+		System.out.println("Código de Barras = " + pecas.getCodigoBarra() + 
+						" Nome = " + pecas.getNome() 
+						+ " Modelo do carro = " + pecas.getModeloCarro() 
+						+ " Fabricante = " + pecas.getFabricante()
+						+ " Preço de Custo = R$" + pecas.getPrecoCusto() 
+						+ " Preço de Venda = R$" + pecas.getPrecoVenda()
+						+ " Quantidade Estoque = " + pecas.getQuantidadeEstoque()
+						+ " Categoria = " + pecas.getCategoria());
 	}
 
 	public static void listarPecasEstoque(Scanner teclado, PecasDAO pecasDao) {
@@ -157,12 +173,33 @@ public class ProgramaPrincipal {
 
 	}
 
+	public static void realizaVenda(Scanner teclado, PecasDAO pecasDao) {
+		System.out.print("\nDigite o código de barras: ");
+		String codigoBarra = teclado.next();
+		System.out.print("Digite a quantidade desejada: ");
+		int quantidadeDesejada = teclado.nextInt();
+		
+		PecasPojo pecasPojo = new PecasPojo();
+		
+		pecasPojo = pecasDao.consultarPecaPorCodigoBarra(codigoBarra);
+		pecasDao.realizaVenda(pecasPojo, quantidadeDesejada);
+		
+		List<PecasPojo> listaVendas = new ArrayList<PecasPojo>();
+		
+		pecasPojo.setQuantidadeEstoque(quantidadeDesejada);		
+		pecasPojo.setPrecoVenda(pecasPojo.getPrecoVenda() * quantidadeDesejada);
+		
+		listaVendas.add(pecasPojo);
+
+	}
+
 	public static void main(String[] args) throws SQLException {
 		Connection conn = new ConnectionFactory().getConnection();
 		Scanner teclado = new Scanner(System.in);
 		PecasDAO pecasDao = new PecasDAO();
 		String opcaoPrimaria = "";
-		String opcaoSecundaria = "";
+		String opcaoPecas = "";
+		String opcaoVendas = "";
 
 		cabecalho();
 
@@ -175,11 +212,11 @@ public class ProgramaPrincipal {
 			case "A":
 				do {
 
-					menuSecundario();
+					menuPecas();
 					System.out.print("\nDigite uma das opções acima: ");
-					opcaoSecundaria = teclado.next();
+					opcaoPecas = teclado.next();
 
-					switch (opcaoSecundaria) {
+					switch (opcaoPecas) {
 
 					case "1":
 						cadastrarNovaPeca(teclado, pecasDao);
@@ -225,9 +262,36 @@ public class ProgramaPrincipal {
 						break;
 					}
 
-				} while (!opcaoSecundaria.equals("0"));
+				} while (!opcaoPecas.equals("0"));
 
 			case "B":
+
+				do {
+					menuVendas();
+					System.out.println("Escolha uma das opções acima: ");
+					opcaoVendas = teclado.next();
+
+					switch (opcaoVendas) {
+
+					case "1":
+						realizaVenda(teclado, pecasDao);
+
+						break;
+
+					case "2":
+
+						break;
+
+					case "0":
+
+						break;
+
+					default:
+						System.out.println("Opção inválida.Tente uma opção de '0' a '2'.");
+						break;
+					}
+
+				} while (!opcaoVendas.equals("0"));
 
 				break;
 
