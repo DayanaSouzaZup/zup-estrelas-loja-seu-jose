@@ -67,10 +67,94 @@ public class ProgramaPrincipal {
 		System.out.print("\nInforme o número do código de barras: ");
 		String codigoBarra = teclado.next();
 		List<PecasPojo> pecasBd = pecasDao.consultarPecaPorCodigoBarra(codigoBarra);
-		System.out.printf("\nRelação das peças com código de barras %s: \n\n" , codigoBarra);
+		System.out.printf("\nRelação das peças com código de barras %s: \n\n", codigoBarra);
 		for (PecasPojo pecas : pecasBd) {
 			System.out.println(pecas);
 		}
+	}
+
+	public static void listarPecasEstoque(Scanner teclado, PecasDAO pecasDao) {
+		int quantidadeEstoque = 0;
+		List<PecasPojo> estoqueBd = pecasDao.listarPecasEstoque(quantidadeEstoque);
+		for (PecasPojo listaEstoque : estoqueBd) {
+			System.out.println(listaEstoque);
+		}
+
+	}
+
+	public static void listarPecasPorLetra(Scanner teclado, PecasDAO pecasDao) {
+		System.out.print("\nDigite uma letra para buscar uma peça:");
+		String letra = teclado.next().toUpperCase();
+		List<PecasPojo> pecasLetra = pecasDao.listarPecaPorLetra(letra);
+		System.out.printf("\nRelação das peças inciadas por %s: \n\n", letra);
+		for (PecasPojo nomePecas : pecasLetra) {
+			System.out.println(nomePecas);
+
+		}
+	}
+
+	public static void listarPecasPorModelo(Scanner teclado, PecasDAO pecasDao) {
+		System.out.print("\nDigite o modelo do carro: ");
+		String modelo = teclado.next();
+		List<PecasPojo> pecasModelo = pecasDao.listarPecaPorModelo(modelo);
+		System.out.printf("\nRelação das peças para o modelo %s: \n\n", modelo);
+		for (PecasPojo modelos : pecasModelo) {
+			System.out.println(modelos);
+		}
+
+	}
+
+	public static void listarPecasPorCategoria(Scanner teclado, PecasDAO pecasDao) {
+		String opcao = "";
+		String categoria = "";
+		System.out.println("(1) Som e vídeo");
+		System.out.println("(2) Personalização");
+		System.out.println("(3) Performance");
+		System.out.print("\nEscolha uma das opções acima: ");
+		opcao = teclado.next();
+
+		switch (opcao) {
+		case "1":
+			categoria = "Som e vídeo";
+			List<PecasPojo> pecasCategoria1 = pecasDao.listarPecaPorCategoria(categoria);
+			System.out.printf("\nRelação das peças para a categoria %s: \n\n", categoria);
+			for (PecasPojo categorias : pecasCategoria1) {
+				System.out.println(categorias);
+			}
+
+			break;
+
+		case "2":
+			categoria = "Personalização";
+			List<PecasPojo> pecasCategoria2 = pecasDao.listarPecaPorCategoria(categoria);
+			System.out.printf("\nRelação das peças para a categoria %s: \n\n", categoria);
+			for (PecasPojo categorias : pecasCategoria2) {
+				System.out.println(categorias);
+			}
+
+			break;
+
+		case "3":
+			categoria = "Perfomance";
+			List<PecasPojo> pecasCategoria3 = pecasDao.listarPecaPorCategoria(categoria);
+			System.out.printf("\nRelação das peças para a categoria %s: \n\n", categoria);
+			for (PecasPojo categorias : pecasCategoria3) {
+				System.out.println(categorias);
+			}
+
+			break;
+
+		default:
+			break;
+		}
+
+	}
+
+	public static void removerPeca(Scanner teclado, PecasDAO pecasDao) {
+		System.out.print("\nDigite o código de barras da peça que deseja excluir: ");
+		String codigoDeBarra = teclado.next();
+		pecasDao.removerPeca(codigoDeBarra);
+
 	}
 
 	public static void main(String[] args) throws SQLException {
@@ -78,6 +162,7 @@ public class ProgramaPrincipal {
 		Scanner teclado = new Scanner(System.in);
 		PecasDAO pecasDao = new PecasDAO();
 		String opcaoPrimaria = "";
+		String opcaoSecundaria = "";
 
 		cabecalho();
 
@@ -88,13 +173,12 @@ public class ProgramaPrincipal {
 
 			switch (opcaoPrimaria) {
 			case "A":
-
-				String opcaoSecundaria = "";
-				menuSecundario();
-				System.out.print("\nDigite uma das opções acima: ");
-				opcaoSecundaria = teclado.next();
-
 				do {
+
+					menuSecundario();
+					System.out.print("\nDigite uma das opções acima: ");
+					opcaoSecundaria = teclado.next();
+
 					switch (opcaoSecundaria) {
 
 					case "1":
@@ -108,22 +192,27 @@ public class ProgramaPrincipal {
 						break;
 
 					case "3":
+						listarPecasEstoque(teclado, pecasDao);
 
 						break;
 
 					case "4":
+						listarPecasPorLetra(teclado, pecasDao);
 
 						break;
 
 					case "5":
+						listarPecasPorModelo(teclado, pecasDao);
 
 						break;
 
 					case "6":
+						listarPecasPorCategoria(teclado, pecasDao);
 
 						break;
 
 					case "7":
+						removerPeca(teclado, pecasDao);
 
 						break;
 
@@ -136,7 +225,6 @@ public class ProgramaPrincipal {
 						break;
 					}
 
-					break;
 				} while (!opcaoSecundaria.equals("0"));
 
 			case "B":
