@@ -58,7 +58,6 @@ public class PecasDAO {
 			ResultSet rs = stmt.executeQuery();
 			while (rs.next()) {
 
-
 				peca.setCodigoBarra(rs.getString("codigo_barra"));
 				peca.setNome(rs.getString("nome"));
 				peca.setModeloCarro(rs.getString("modelo_carro"));
@@ -67,7 +66,6 @@ public class PecasDAO {
 				peca.setPrecoVenda(rs.getFloat("preço_venda"));
 				peca.setQuantidadeEstoque(rs.getInt("quantidade_estoque"));
 				peca.setCategoria(rs.getString("categoria"));
-			//	pecas.add(peca);
 			}
 
 		} catch (SQLException e) {
@@ -234,21 +232,19 @@ public class PecasDAO {
 	}
 
 	public boolean realizaVenda(PecasPojo pecasPojo, int quantidadeDesejada) {
-		
-		String sql = "update pecas"
-				+ "set quantidade_estoque = ?"
-				+ "where codigo_barra = ?";
-		
+
+		String sql = "update pecas set quantidade_estoque = ? where codigo_barra = ?";
+
 		try {
 			PreparedStatement stmt = conn.prepareStatement(sql);
-			
+
 			stmt.setInt(1, pecasPojo.getQuantidadeEstoque() - quantidadeDesejada);
 			stmt.setString(2, pecasPojo.getCodigoBarra());
-			
+
 			stmt.execute();
 			stmt.close();
 			System.out.println("Venda realizada com sucesso!");
-			
+
 		} catch (SQLException e) {
 			System.out.println("Erro ao realizar venda.");
 			System.out.println(e.getMessage());
@@ -256,6 +252,5 @@ public class PecasDAO {
 		}
 		return true;
 	}
-
 
 }

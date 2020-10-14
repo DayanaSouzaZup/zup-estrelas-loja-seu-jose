@@ -74,19 +74,15 @@ public class ProgramaPrincipal {
 	public static void consultarPecaPorCodigoBarra(Scanner teclado, PecasDAO pecasDao) {
 		System.out.print("\nInforme o número do código de barras: ");
 		String codigoBarra = teclado.next();
-		
+
 		PecasPojo pecas = pecasDao.consultarPecaPorCodigoBarra(codigoBarra);
-		
+
 		System.out.printf("\nRelação das peças com código de barras %s: \n\n", codigoBarra);
-		
-		System.out.println("Código de Barras = " + pecas.getCodigoBarra() + 
-						" Nome = " + pecas.getNome() 
-						+ " Modelo do carro = " + pecas.getModeloCarro() 
-						+ " Fabricante = " + pecas.getFabricante()
-						+ " Preço de Custo = R$" + pecas.getPrecoCusto() 
-						+ " Preço de Venda = R$" + pecas.getPrecoVenda()
-						+ " Quantidade Estoque = " + pecas.getQuantidadeEstoque()
-						+ " Categoria = " + pecas.getCategoria());
+
+		System.out.println("Código de Barras = " + pecas.getCodigoBarra() + " Nome = " + pecas.getNome()
+				+ " Modelo do carro = " + pecas.getModeloCarro() + " Fabricante = " + pecas.getFabricante()
+				+ " Preço de Custo = R$" + pecas.getPrecoCusto() + " Preço de Venda = R$" + pecas.getPrecoVenda()
+				+ " Quantidade Estoque = " + pecas.getQuantidadeEstoque() + " Categoria = " + pecas.getCategoria());
 	}
 
 	public static void listarPecasEstoque(Scanner teclado, PecasDAO pecasDao) {
@@ -173,29 +169,44 @@ public class ProgramaPrincipal {
 
 	}
 
-	public static void realizaVenda(Scanner teclado, PecasDAO pecasDao) {
+	public static List<PecasPojo> realizaVenda(Scanner teclado, PecasDAO pecasDao, List<PecasPojo> relatorioVendas) {
+		PecasPojo pecasPojo = new PecasPojo();
+
 		System.out.print("\nDigite o código de barras: ");
 		String codigoBarra = teclado.next();
 		System.out.print("Digite a quantidade desejada: ");
 		int quantidadeDesejada = teclado.nextInt();
-		
-		PecasPojo pecasPojo = new PecasPojo();
-		
-		pecasPojo = pecasDao.consultarPecaPorCodigoBarra(codigoBarra);
-		pecasDao.realizaVenda(pecasPojo, quantidadeDesejada);
-		
-		List<PecasPojo> listaVendas = new ArrayList<PecasPojo>();
-		
-		pecasPojo.setQuantidadeEstoque(quantidadeDesejada);		
-		pecasPojo.setPrecoVenda(pecasPojo.getPrecoVenda() * quantidadeDesejada);
-		
-		listaVendas.add(pecasPojo);
 
+		pecasPojo = pecasDao.consultarPecaPorCodigoBarra(codigoBarra);
+		while (pecasPojo.getQuantidadeEstoque() < quantidadeDesejada) {
+			System.out.println("\nNão temos a quantidade desejada em estoque. Quantidade em estoque: "
+					+ pecasPojo.getQuantidadeEstoque());
+			quantidadeDesejada = teclado.nextInt();
+			pecasPojo = pecasDao.consultarPecaPorCodigoBarra(codigoBarra);
+
+		}
+		pecasDao.realizaVenda(pecasPojo, quantidadeDesejada);
+
+		pecasPojo.setQuantidadeEstoque(quantidadeDesejada);
+		pecasPojo.setPrecoVenda(pecasPojo.getPrecoVenda() * quantidadeDesejada);
+
+		relatorioVendas.add(pecasPojo);
+		return relatorioVendas;
+
+	}
+
+	public static void imprimeRelatorioVendas(PecasDAO pecasDao, List<PecasPojo> relatorioVendas) {
+		System.out.println("Codigo de Barras        Nome           Quantidade           Valor" );
+		for (PecasPojo vendas : relatorioVendas) {
+			System.out.println( vendas.getCodigoBarra() +"                        " + vendas.getNome() + "           " + vendas.getQuantidadeEstoque() + "          " + vendas.getPrecoVenda());
+		}
+		
 	}
 
 	public static void main(String[] args) throws SQLException {
 		Connection conn = new ConnectionFactory().getConnection();
 		Scanner teclado = new Scanner(System.in);
+		List<PecasPojo> relatorioVendas = new ArrayList<PecasPojo>();
 		PecasDAO pecasDao = new PecasDAO();
 		String opcaoPrimaria = "";
 		String opcaoPecas = "";
@@ -274,11 +285,12 @@ public class ProgramaPrincipal {
 					switch (opcaoVendas) {
 
 					case "1":
-						realizaVenda(teclado, pecasDao);
+						relatorioVendas = realizaVenda(teclado, pecasDao, relatorioVendas);
 
 						break;
 
 					case "2":
+						imprimeRelatorioVendas(pecasDao, relatorioVendas);
 
 						break;
 
