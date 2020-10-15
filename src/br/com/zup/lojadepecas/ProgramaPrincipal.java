@@ -1,5 +1,6 @@
 package br.com.zup.lojadepecas;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -196,11 +197,14 @@ public class ProgramaPrincipal {
 	}
 
 	public static void imprimeRelatorioVendas(PecasDAO pecasDao, List<PecasPojo> relatorioVendas) {
-		System.out.println("Codigo de Barras        Nome           Quantidade           Valor" );
+		double valorTotal = 0;
 		for (PecasPojo vendas : relatorioVendas) {
-			System.out.println( vendas.getCodigoBarra() +"                        " + vendas.getNome() + "           " + vendas.getQuantidadeEstoque() + "          " + vendas.getPrecoVenda());
+			System.out.println(" Codigo de Barras = " + vendas.getCodigoBarra() + " Nome = " + vendas.getNome()
+					+ " Quantidade = " + vendas.getQuantidadeEstoque() + " Valor =  " + vendas.getPrecoVenda());
+			valorTotal += vendas.getPrecoVenda();
 		}
-		
+		System.out.printf("\nValor total de vendas: %.2f\n\n", valorTotal);
+
 	}
 
 	public static void main(String[] args) throws SQLException {
@@ -269,7 +273,7 @@ public class ProgramaPrincipal {
 						break;
 
 					default:
-						System.out.println("Opção inválida.Tente uma opção de '0' a '7'.");
+						System.out.println("\nOpção inválida.Tente uma opção de '0' a '7'.");
 						break;
 					}
 
@@ -279,7 +283,7 @@ public class ProgramaPrincipal {
 
 				do {
 					menuVendas();
-					System.out.println("Escolha uma das opções acima: ");
+					System.out.print("\nEscolha uma das opções acima: ");
 					opcaoVendas = teclado.next();
 
 					switch (opcaoVendas) {
@@ -291,6 +295,13 @@ public class ProgramaPrincipal {
 
 					case "2":
 						imprimeRelatorioVendas(pecasDao, relatorioVendas);
+						try {
+							pecasDao.arquivoVendas(relatorioVendas);
+							System.out.println("\nArquivo registrado com sucesso!");
+						} catch (IOException e) {
+							System.out.println("\nNão foi possível registrar o relatório de vendas");
+							System.out.println(e.getMessage());
+						}
 
 						break;
 
@@ -299,7 +310,7 @@ public class ProgramaPrincipal {
 						break;
 
 					default:
-						System.out.println("Opção inválida.Tente uma opção de '0' a '2'.");
+						System.out.println("\nOpção inválida.Tente uma opção de '0' a '2'.");
 						break;
 					}
 
@@ -308,7 +319,7 @@ public class ProgramaPrincipal {
 				break;
 
 			case "C":
-				System.out.println("Obrigada por utilizar nosso sistema! =D ");
+				System.out.println("\nObrigada por utilizar nosso sistema! =D ");
 
 				break;
 

@@ -1,0 +1,6 @@
+Vendas - Dia 14
+
+ Codigo de Barras = 56789/ Nome = Bucha amortecedor/ Quantidade = 2/ Valor =  34.0
+ Codigo de Barras = 67890/ Nome = Interruptor de luz/ Quantidade = 2/ Valor =  360.0
+
+Total de vendas: 394,00

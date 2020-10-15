@@ -1,10 +1,13 @@
 package br.com.zup.DAO;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import br.com.zup.POJO.PecasPojo;
@@ -251,6 +254,22 @@ public class PecasDAO {
 			return false;
 		}
 		return true;
+	}
+
+	public void arquivoVendas(List<PecasPojo> relatorioVendas) throws IOException {
+		double totalVendas = 0;
+		String nomeArquivo = "relatorioVendas_dia_" + Calendar.getInstance().get(Calendar.DAY_OF_MONTH) + ".txt";
+		FileWriter writer = new FileWriter(nomeArquivo);
+		writer.write("Vendas - Dia " + Calendar.getInstance().get(Calendar.DAY_OF_MONTH));
+		writer.write("\n\n");
+		for (PecasPojo pecasPojo : relatorioVendas) {
+			writer.append(String.format(" Codigo de Barras = " + pecasPojo.getCodigoBarra() + "/ Nome = " + pecasPojo.getNome()
+			+ "/ Quantidade = " + pecasPojo.getQuantidadeEstoque() + "/ Valor =  " + pecasPojo.getPrecoVenda()));
+			writer.write("\n");
+			totalVendas += pecasPojo.getPrecoVenda();
+		}
+		writer.append(String.format("\nTotal de vendas: %.2f", totalVendas));
+		writer.close();
 	}
 
 }
