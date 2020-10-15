@@ -45,20 +45,24 @@ public class PecasDAO {
 		} catch (SQLException e) {
 
 			System.out.println(
-					"\nNão foi possível cadastrar a peça. " + "Verifique se o dados foram inseridos corretamente.\n ");
+					"\nNão foi possível cadastrar a peça. Verifique se o dados foram inseridos corretamente.\n ");
 			System.out.println(e.getMessage());
 		}
 	}
 
 	public PecasPojo consultarPecaPorCodigoBarra(String codigoBarra) {
+		
 		PecasPojo peca = new PecasPojo();
+		
 		String sql = "select * from pecas where codigo_barra = ?";
 
 		try {
 			PreparedStatement stmt = conn.prepareStatement(sql);
+			
 			stmt.setString(1, codigoBarra);
 
 			ResultSet rs = stmt.executeQuery();
+			
 			while (rs.next()) {
 
 				peca.setCodigoBarra(rs.getString("codigo_barra"));
@@ -72,15 +76,17 @@ public class PecasDAO {
 			}
 
 		} catch (SQLException e) {
-			System.out.println("\nO código de barra inválido ou ocorreu um erro na busca");
-
+			
+			System.out.println("\nO código de barras informado é inválido ou ocorreu um erro na busca\n");
 			System.out.println(e.getMessage());
 		}
 		return peca;
 	}
 
-	public List<PecasPojo> listarPecasEstoque(int quantidadeEstoque) {
+	public List<PecasPojo> listarPecasEstoque() {
+		
 		List<PecasPojo> listaEstoque = new ArrayList<PecasPojo>();
+		
 		String sql = "select * from pecas ";
 
 		try {
@@ -104,8 +110,8 @@ public class PecasDAO {
 			}
 
 		} catch (SQLException e) {
-			System.out.println("\nOcorreu um erro na busca");
-
+			
+			System.out.println("\nErro ao listar as peças em estoque. Tente novamente!\n");
 			System.out.println(e.getMessage());
 		}
 
@@ -139,8 +145,8 @@ public class PecasDAO {
 			}
 
 		} catch (SQLException e) {
-			System.out.println("\nOcorreu um erro na busca");
-
+			
+			System.out.println("\nErro na busca por peça por letra inicial. Tente novamente!\n");
 			System.out.println(e.getMessage());
 		}
 
@@ -149,11 +155,14 @@ public class PecasDAO {
 	}
 
 	public List<PecasPojo> listarPecaPorModelo(String modelo) {
+		
 		List<PecasPojo> modeloCarro = new ArrayList<PecasPojo>();
+		
 		String sql = "select * from  pecas where modelo_carro = ? ";
 
 		try {
 			PreparedStatement stmt = conn.prepareStatement(sql);
+			
 			stmt.setString(1, modelo);
 
 			ResultSet rs = stmt.executeQuery();
@@ -174,7 +183,7 @@ public class PecasDAO {
 			}
 
 		} catch (SQLException e) {
-			System.out.println("\nOcorreu um erro na busca");
+			System.out.println("\nErro na busca por modelo. Tente novamente!\n");
 
 			System.out.println(e.getMessage());
 		}
@@ -183,11 +192,14 @@ public class PecasDAO {
 	}
 
 	public List<PecasPojo> listarPecaPorCategoria(String categoria) {
+		
 		List<PecasPojo> pecaCategoria = new ArrayList<PecasPojo>();
+		
 		String sql = "select * from  pecas where categoria = ? ";
 
 		try {
 			PreparedStatement stmt = conn.prepareStatement(sql);
+			
 			stmt.setString(1, categoria);
 
 			ResultSet rs = stmt.executeQuery();
@@ -208,8 +220,8 @@ public class PecasDAO {
 			}
 
 		} catch (SQLException e) {
-			System.out.println("\nOcorreu um erro na busca");
-
+			
+			System.out.println("\nErro ao buscar a categoria informada. Tente novamente!\n");
 			System.out.println(e.getMessage());
 		}
 
@@ -220,15 +232,18 @@ public class PecasDAO {
 
 		try {
 			String sql = "delete from pecas where codigo_barra = ?";
+			
 			PreparedStatement stmt = conn.prepareStatement(sql);
+			
 			stmt.setString(1, codigoBarra);
 
 			stmt.execute();
 			stmt.close();
+			
 			System.out.println("\nPeça removida com sucesso!");
 
 		} catch (SQLException e) {
-			System.out.println("\nNão foi possível remover a peça. Verifique o código de barra informado");
+			System.out.println("\nNão foi possível remover a peça. Verifique o código de barras informado\n");
 			System.out.println(e.getMessage());
 		}
 
@@ -246,30 +261,50 @@ public class PecasDAO {
 
 			stmt.execute();
 			stmt.close();
-			System.out.println("Venda realizada com sucesso!");
+			
+			System.out.println("\nVenda realizada com sucesso!\n");
 
 		} catch (SQLException e) {
-			System.out.println("Erro ao realizar venda.");
+			System.out.println("\nErro ao realizar venda. Verifique os dados informados\n");
 			System.out.println(e.getMessage());
 			return false;
 		}
 		return true;
 	}
 
-	public void arquivoVendas(List<PecasPojo> relatorioVendas) throws IOException {
+	public void arquivoVendas(List<PecasPojo> relatorioVendas) {
+		
 		double totalVendas = 0;
 		String nomeArquivo = "relatorioVendas_dia_" + Calendar.getInstance().get(Calendar.DAY_OF_MONTH) + ".txt";
-		FileWriter writer = new FileWriter(nomeArquivo);
-		writer.write("Vendas - Dia " + Calendar.getInstance().get(Calendar.DAY_OF_MONTH));
-		writer.write("\n\n");
-		for (PecasPojo pecasPojo : relatorioVendas) {
-			writer.append(String.format(" Codigo de Barras = " + pecasPojo.getCodigoBarra() + "/ Nome = " + pecasPojo.getNome()
-			+ "/ Quantidade = " + pecasPojo.getQuantidadeEstoque() + "/ Valor =  " + pecasPojo.getPrecoVenda()));
-			writer.write("\n");
-			totalVendas += pecasPojo.getPrecoVenda();
+		
+		try {
+			FileWriter writer = new FileWriter(nomeArquivo);
+			
+			writer.write("Vendas - Dia " + Calendar.getInstance().get(Calendar.DAY_OF_MONTH));
+			writer.write("\n\n");
+			
+			for (PecasPojo pecasPojo : relatorioVendas) {
+				
+				writer.append(String.format(" Codigo de Barras = " + pecasPojo.getCodigoBarra() + "/ Nome = " + pecasPojo.getNome()
+				+ "/ Quantidade = " + pecasPojo.getQuantidadeEstoque() + "/ Valor =  " + pecasPojo.getPrecoVenda()));
+				
+				writer.write("\n");
+				
+				totalVendas += pecasPojo.getPrecoVenda();
+			}
+			
+			writer.append(String.format("\nTotal de vendas: %.2f", totalVendas));
+			
+			writer.close();
+			
+			System.out.println("\nArquivo registrado com sucesso!\n");
+			
+		} catch (IOException e) {
+			System.out.println("\nNão foi possível registrar as informações em Arquivo. Tente novamente!");
+			System.out.println(e.getMessage());
 		}
-		writer.append(String.format("\nTotal de vendas: %.2f", totalVendas));
-		writer.close();
+		
+		
 	}
 
 }
