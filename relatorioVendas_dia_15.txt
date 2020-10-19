@@ -1,0 +1,5 @@
+Vendas - Dia 15
+
+ Codigo de Barras = 78901/ Nome = TAPETE/ Quantidade = 2/ Valor =  117.6
+
+Total de vendas: 117,60

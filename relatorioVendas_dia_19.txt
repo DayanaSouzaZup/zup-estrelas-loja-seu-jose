@@ -1,0 +1,5 @@
+Vendas - Dia 19
+
+ Codigo de Barras = 12345/ Nome = Multimídia/ Quantidade = 1/ Valor =  1700.0
+
+Total de vendas: 1700,00

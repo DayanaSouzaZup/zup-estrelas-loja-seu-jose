@@ -1,17 +1,39 @@
 package br.com.zup.POJO;
 
-public class PecasPojo {
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
+
+@Entity@Table(name = "pecas")
+public class Pecas {
+	
+	@Id@Column(name = "codigo_barra")
 	private String codigoBarra;
+	
+	@Column(name = "nome")
 	private String nome;
+	
+	@Column(name = "modelo_carro")
 	private String modeloCarro;
+	
+	@Column(name = "fabricante")
 	private String fabricante;
+	
+	@Column(name = "preço_custo")
 	private float precoCusto;
+	
+	@Column(name = "preço_venda")
 	private float precoVenda;
+	
+	@Column(name = "quantidade_estoque")
 	private int quantidadeEstoque;
+	
+	@Column(name = "categoria")
 	private String categoria;
 
-	public PecasPojo(String codigoBarra, String nome, String modeloCarro, String fabricante, float precoCusto,
+	public Pecas(String codigoBarra, String nome, String modeloCarro, String fabricante, float precoCusto,
 			float precoVenda, int quantidadeEstoque, String categoria) {
 
 		this.codigoBarra = codigoBarra;
@@ -24,7 +46,7 @@ public class PecasPojo {
 		this.categoria = categoria;
 	}
 
-	public PecasPojo() {
+	public Pecas() {
 
 	}
 

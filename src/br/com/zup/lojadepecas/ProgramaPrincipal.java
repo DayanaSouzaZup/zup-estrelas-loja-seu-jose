@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Scanner;
 
 import br.com.zup.DAO.PecasDAO;
-import br.com.zup.POJO.PecasPojo;
+import br.com.zup.POJO.Pecas;
 import br.com.zup.connectionfactory.ConnectionFactory;
 
 public class ProgramaPrincipal {
@@ -76,7 +76,7 @@ public class ProgramaPrincipal {
 		System.out.print("\nDigite a categoria: ");
 		String categoria = teclado.nextLine();
 
-		PecasPojo peca = new PecasPojo(codigoDeBarras, nomePeca, modeloCarro, fabricante, precoCusto, precoVenda,
+		Pecas peca = new Pecas(codigoDeBarras, nomePeca, modeloCarro, fabricante, precoCusto, precoVenda,
 				quantidadeEstoque, categoria);
 
 		pecasDao.cadastrarPeca(peca);
@@ -88,7 +88,7 @@ public class ProgramaPrincipal {
 		System.out.print("\nInforme o número do código de barras: ");
 		String codigoBarra = teclado.next();
 
-		PecasPojo pecas = pecasDao.consultarPecaPorCodigoBarra(codigoBarra);
+		Pecas pecas = pecasDao.consultarPecaPorCodigoBarra(codigoBarra);
 
 		System.out.printf("\nRelação das peças com código de barras %s: \n\n", codigoBarra);
 
@@ -101,11 +101,11 @@ public class ProgramaPrincipal {
 
 	public static void listarPecasEstoque(Scanner teclado, PecasDAO pecasDao) {
 
-		List<PecasPojo> estoqueBd = pecasDao.listarPecasEstoque();
+		List<Pecas> estoqueBd = pecasDao.listarPecasEstoque();
 		
 		System.out.println("\nRelação das peças em estoque: \n");
 
-		for (PecasPojo listaEstoque : estoqueBd) {
+		for (Pecas listaEstoque : estoqueBd) {
 			System.out.println(listaEstoque);
 		}
 
@@ -116,11 +116,11 @@ public class ProgramaPrincipal {
 		System.out.print("\nDigite uma letra para buscar uma peça:");
 		String letra = teclado.next().toUpperCase();
 
-		List<PecasPojo> pecasLetra = pecasDao.listarPecaPorLetra(letra);
+		List<Pecas> pecasLetra = pecasDao.listarPecaPorLetra(letra);
 
 		System.out.printf("\nRelação das peças inciadas por %s: \n\n", letra);
 
-		for (PecasPojo nomePecas : pecasLetra) {
+		for (Pecas nomePecas : pecasLetra) {
 			System.out.println(nomePecas);
 
 		}
@@ -131,11 +131,11 @@ public class ProgramaPrincipal {
 		System.out.print("\nDigite o modelo do carro: ");
 		String modelo = teclado.next();
 
-		List<PecasPojo> pecasModelo = pecasDao.listarPecaPorModelo(modelo);
+		List<Pecas> pecasModelo = pecasDao.listarPecaPorModelo(modelo);
 
 		System.out.printf("\nRelação das peças para o modelo %s: \n\n", modelo);
 
-		for (PecasPojo modelos : pecasModelo) {
+		for (Pecas modelos : pecasModelo) {
 			System.out.println(modelos);
 		}
 
@@ -158,11 +158,11 @@ public class ProgramaPrincipal {
 			
 			categoria = "Som e vídeo";
 			
-			List<PecasPojo> pecasCategoria1 = pecasDao.listarPecaPorCategoria(categoria);
+			List<Pecas> pecasCategoria1 = pecasDao.listarPecaPorCategoria(categoria);
 			
 			System.out.printf("\nRelação das peças para a categoria %s: \n\n", categoria);
 			
-			for (PecasPojo categorias : pecasCategoria1) {
+			for (Pecas categorias : pecasCategoria1) {
 				System.out.println(categorias);
 			}
 
@@ -172,11 +172,11 @@ public class ProgramaPrincipal {
 			
 			categoria = "Personalização";
 			
-			List<PecasPojo> pecasCategoria2 = pecasDao.listarPecaPorCategoria(categoria);
+			List<Pecas> pecasCategoria2 = pecasDao.listarPecaPorCategoria(categoria);
 			
 			System.out.printf("\nRelação das peças para a categoria %s: \n\n", categoria);
 			
-			for (PecasPojo categorias : pecasCategoria2) {
+			for (Pecas categorias : pecasCategoria2) {
 				System.out.println(categorias);
 			}
 
@@ -186,11 +186,11 @@ public class ProgramaPrincipal {
 			
 			categoria = "Perfomance";
 			
-			List<PecasPojo> pecasCategoria3 = pecasDao.listarPecaPorCategoria(categoria);
+			List<Pecas> pecasCategoria3 = pecasDao.listarPecaPorCategoria(categoria);
 			
 			System.out.printf("\nRelação das peças para a categoria %s: \n\n", categoria);
 			
-			for (PecasPojo categorias : pecasCategoria3) {
+			for (Pecas categorias : pecasCategoria3) {
 				System.out.println(categorias);
 			}
 
@@ -209,7 +209,7 @@ public class ProgramaPrincipal {
 
 	}
 
-	public static List<PecasPojo> realizaVenda(Scanner teclado, PecasDAO pecasDao, List<PecasPojo> relatorioVendas, PecasPojo pecasPojo) {
+	public static List<Pecas> realizaVenda(Scanner teclado, PecasDAO pecasDao, List<Pecas> relatorioVendas, Pecas pecasPojo) {
 		
 		System.out.print("\nDigite o código de barras: ");
 		String codigoBarra = teclado.next();
@@ -228,7 +228,7 @@ public class ProgramaPrincipal {
 
 		}
 
-		pecasDao.realizaVenda(pecasPojo, quantidadeDesejada);
+		pecasDao.realizaVenda(codigoBarra, quantidadeDesejada);
 
 		pecasPojo.setQuantidadeEstoque(quantidadeDesejada);
 		pecasPojo.setPrecoVenda(pecasPojo.getPrecoVenda() * quantidadeDesejada);
@@ -239,13 +239,13 @@ public class ProgramaPrincipal {
 
 	}
 
-	public static void imprimeRelatorioVendas(PecasDAO pecasDao, List<PecasPojo> relatorioVendas) {
+	public static void imprimeRelatorioVendas(PecasDAO pecasDao, List<Pecas> relatorioVendas) {
 		
 		double valorTotal = 0;
 		
 		System.out.println("\nRelatório de vendas dia " + Calendar.getInstance().get(Calendar.DAY_OF_MONTH) + ":\n");
 		
-		for (PecasPojo vendas : relatorioVendas) {
+		for (Pecas vendas : relatorioVendas) {
 		
 			System.out.println("Codigo de Barras = " + vendas.getCodigoBarra() + " Nome = " + vendas.getNome()
 					+ " Quantidade = " + vendas.getQuantidadeEstoque() + " Valor =  " + vendas.getPrecoVenda());
@@ -259,8 +259,8 @@ public class ProgramaPrincipal {
 
 	public static void main(String[] args) throws SQLException {
 		Connection conn = new ConnectionFactory().getConnection();
-		List<PecasPojo> relatorioVendas = new ArrayList<PecasPojo>();
-		PecasPojo pecasPojo = new PecasPojo();
+		List<Pecas> relatorioVendas = new ArrayList<Pecas>();
+		Pecas pecasPojo = new Pecas();
 		PecasDAO pecasDao = new PecasDAO();
 		Scanner teclado = new Scanner(System.in);
 		String opcaoPrimaria = "";

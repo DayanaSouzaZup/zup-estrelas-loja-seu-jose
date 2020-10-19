@@ -10,301 +10,401 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-import br.com.zup.POJO.PecasPojo;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
+import javax.persistence.Query;
+
+import br.com.zup.POJO.Pecas;
 import br.com.zup.connectionfactory.ConnectionFactory;
 
 public class PecasDAO {
 
-	private Connection conn;
+	EntityManager manager;
 
 	public PecasDAO() {
-		this.conn = new ConnectionFactory().getConnection();
+
+		EntityManagerFactory managerFactory = Persistence.createEntityManagerFactory("pecas");
+		this.manager = managerFactory.createEntityManager();
 	}
 
-	public void cadastrarPeca(PecasPojo pecas) {
+	public void cadastrarPeca(Pecas pecas) {
 
-		String sql = "insert into pecas" + "(codigo_barra, nome, modelo_carro, fabricante, preço_custo,"
-				+ " preço_venda, quantidade_estoque, categoria)" + "values(?, ?, ?, ?, ?, ?, ?, ?)";
-
-		try {
-			PreparedStatement stmt = conn.prepareStatement(sql);
-
-			stmt.setString(1, pecas.getCodigoBarra());
-			stmt.setString(2, pecas.getNome());
-			stmt.setString(3, pecas.getModeloCarro());
-			stmt.setString(4, pecas.getFabricante());
-			stmt.setFloat(5, pecas.getPrecoCusto());
-			stmt.setFloat(6, pecas.getPrecoVenda());
-			stmt.setInt(7, pecas.getQuantidadeEstoque());
-			stmt.setString(8, pecas.getCategoria());
-
-			stmt.execute();
-			stmt.close();
-			System.out.println("\nPeça adicionada com sucesso!\n");
-
-		} catch (SQLException e) {
-
-			System.out.println(
-					"\nNão foi possível cadastrar a peça. Verifique se o dados foram inseridos corretamente.\n ");
-			System.out.println(e.getMessage());
-		}
+		manager.getTransaction().begin();
+		manager.persist(pecas);
+		manager.getTransaction().commit();
 	}
 
-	public PecasPojo consultarPecaPorCodigoBarra(String codigoBarra) {
-		
-		PecasPojo peca = new PecasPojo();
-		
-		String sql = "select * from pecas where codigo_barra = ?";
+	public Pecas consultarPecaPorCodigoBarra(String codigoBarra) {
 
-		try {
-			PreparedStatement stmt = conn.prepareStatement(sql);
-			
-			stmt.setString(1, codigoBarra);
+		Pecas pecasEstoque = manager.find(Pecas.class, codigoBarra);
 
-			ResultSet rs = stmt.executeQuery();
-			
-			while (rs.next()) {
-
-				peca.setCodigoBarra(rs.getString("codigo_barra"));
-				peca.setNome(rs.getString("nome"));
-				peca.setModeloCarro(rs.getString("modelo_carro"));
-				peca.setFabricante(rs.getString("fabricante"));
-				peca.setPrecoCusto(rs.getFloat("preço_custo"));
-				peca.setPrecoVenda(rs.getFloat("preço_venda"));
-				peca.setQuantidadeEstoque(rs.getInt("quantidade_estoque"));
-				peca.setCategoria(rs.getString("categoria"));
-			}
-
-		} catch (SQLException e) {
-			
-			System.out.println("\nO código de barras informado é inválido ou ocorreu um erro na busca\n");
-			System.out.println(e.getMessage());
-		}
-		return peca;
+		return pecasEstoque;
 	}
 
-	public List<PecasPojo> listarPecasEstoque() {
-		
-		List<PecasPojo> listaEstoque = new ArrayList<PecasPojo>();
-		
-		String sql = "select * from pecas ";
+	public List<Pecas> listarPecasEstoque() {
 
-		try {
-			PreparedStatement stmt = conn.prepareStatement(sql);
+		Query query = manager.createQuery("select p from Pecas as p");
 
-			ResultSet rs = stmt.executeQuery();
+		List<Pecas> listaPecas = query.getResultList();
 
-			while (rs.next()) {
-
-				PecasPojo estoque = new PecasPojo();
-
-				estoque.setCodigoBarra(rs.getString("codigo_barra"));
-				estoque.setNome(rs.getString("nome"));
-				estoque.setModeloCarro(rs.getString("modelo_carro"));
-				estoque.setFabricante(rs.getString("fabricante"));
-				estoque.setPrecoCusto(rs.getFloat("preço_custo"));
-				estoque.setPrecoVenda(rs.getFloat("preço_venda"));
-				estoque.setQuantidadeEstoque(rs.getInt("quantidade_estoque"));
-				estoque.setCategoria(rs.getString("categoria"));
-				listaEstoque.add(estoque);
-			}
-
-		} catch (SQLException e) {
-			
-			System.out.println("\nErro ao listar as peças em estoque. Tente novamente!\n");
-			System.out.println(e.getMessage());
-		}
-
-		return listaEstoque;
-
+		return listaPecas;
 	}
 
-	public List<PecasPojo> listarPecaPorLetra(String letra) {
-		List<PecasPojo> nomePecas = new ArrayList<PecasPojo>();
-		String sql = "select * from  pecas where nome like ? ";
+	public List<Pecas> listarPecaPorLetra(String letra) {
 
-		try {
-			PreparedStatement stmt = conn.prepareStatement(sql);
-			stmt.setString(1, letra + "%");
+		Query query = manager.createQuery("select p from Pecas as p where p.nome like CONCAT(:parametro, '%')");
 
-			ResultSet rs = stmt.executeQuery();
+		query.setParameter("parametro", letra);
 
-			while (rs.next()) {
+		List<Pecas> listaPecasPorLetra = query.getResultList();
 
-				PecasPojo pecas = new PecasPojo();
-
-				pecas.setCodigoBarra(rs.getString("codigo_barra"));
-				pecas.setNome(rs.getString("nome"));
-				pecas.setModeloCarro(rs.getString("modelo_carro"));
-				pecas.setFabricante(rs.getString("fabricante"));
-				pecas.setPrecoCusto(rs.getFloat("preço_custo"));
-				pecas.setPrecoVenda(rs.getFloat("preço_venda"));
-				pecas.setQuantidadeEstoque(rs.getInt("quantidade_estoque"));
-				pecas.setCategoria(rs.getString("categoria"));
-				nomePecas.add(pecas);
-			}
-
-		} catch (SQLException e) {
-			
-			System.out.println("\nErro na busca por peça por letra inicial. Tente novamente!\n");
-			System.out.println(e.getMessage());
-		}
-
-		return nomePecas;
-
+		return listaPecasPorLetra;
 	}
 
-	public List<PecasPojo> listarPecaPorModelo(String modelo) {
-		
-		List<PecasPojo> modeloCarro = new ArrayList<PecasPojo>();
-		
-		String sql = "select * from  pecas where modelo_carro = ? ";
+	public List<Pecas> listarPecaPorModelo(String modelo) {
 
-		try {
-			PreparedStatement stmt = conn.prepareStatement(sql);
-			
-			stmt.setString(1, modelo);
+		Query query = manager.createQuery("SELECT p FROM Pecas AS p WHERE p.modeloCarro = :modeloCarro");
 
-			ResultSet rs = stmt.executeQuery();
+		query.setParameter("modeloCarro", modelo);
 
-			while (rs.next()) {
+		List<Pecas> listaPecasPorModelo = query.getResultList();
 
-				PecasPojo pecas = new PecasPojo();
-
-				pecas.setCodigoBarra(rs.getString("codigo_barra"));
-				pecas.setNome(rs.getString("nome"));
-				pecas.setModeloCarro(rs.getString("modelo_carro"));
-				pecas.setFabricante(rs.getString("fabricante"));
-				pecas.setPrecoCusto(rs.getFloat("preço_custo"));
-				pecas.setPrecoVenda(rs.getFloat("preço_venda"));
-				pecas.setQuantidadeEstoque(rs.getInt("quantidade_estoque"));
-				pecas.setCategoria(rs.getString("categoria"));
-				modeloCarro.add(pecas);
-			}
-
-		} catch (SQLException e) {
-			System.out.println("\nErro na busca por modelo. Tente novamente!\n");
-
-			System.out.println(e.getMessage());
-		}
-
-		return modeloCarro;
+		return listaPecasPorModelo;
 	}
 
-	public List<PecasPojo> listarPecaPorCategoria(String categoria) {
-		
-		List<PecasPojo> pecaCategoria = new ArrayList<PecasPojo>();
-		
-		String sql = "select * from  pecas where categoria = ? ";
+	public List<Pecas> listarPecaPorCategoria(String categoria) {
 
-		try {
-			PreparedStatement stmt = conn.prepareStatement(sql);
-			
-			stmt.setString(1, categoria);
+		Query query = manager.createQuery("select p from Pecas as p where p.categoria =: categoria");
 
-			ResultSet rs = stmt.executeQuery();
+		query.setParameter("categoria", categoria);
 
-			while (rs.next()) {
+		List<Pecas> listaPecasPorCategoria = query.getResultList();
 
-				PecasPojo pecas = new PecasPojo();
+		return listaPecasPorCategoria;
 
-				pecas.setCodigoBarra(rs.getString("codigo_barra"));
-				pecas.setNome(rs.getString("nome"));
-				pecas.setModeloCarro(rs.getString("modelo_carro"));
-				pecas.setFabricante(rs.getString("fabricante"));
-				pecas.setPrecoCusto(rs.getFloat("preço_custo"));
-				pecas.setPrecoVenda(rs.getFloat("preço_venda"));
-				pecas.setQuantidadeEstoque(rs.getInt("quantidade_estoque"));
-				pecas.setCategoria(rs.getString("categoria"));
-				pecaCategoria.add(pecas);
-			}
-
-		} catch (SQLException e) {
-			
-			System.out.println("\nErro ao buscar a categoria informada. Tente novamente!\n");
-			System.out.println(e.getMessage());
-		}
-
-		return pecaCategoria;
 	}
 
 	public void removerPeca(String codigoBarra) {
 
-		try {
-			String sql = "delete from pecas where codigo_barra = ?";
-			
-			PreparedStatement stmt = conn.prepareStatement(sql);
-			
-			stmt.setString(1, codigoBarra);
+		Pecas removePeca = manager.find(Pecas.class, codigoBarra);
 
-			stmt.execute();
-			stmt.close();
-			
-			System.out.println("\nPeça removida com sucesso!");
-
-		} catch (SQLException e) {
-			System.out.println("\nNão foi possível remover a peça. Verifique o código de barras informado\n");
-			System.out.println(e.getMessage());
-		}
-
+		manager.getTransaction().begin();
+		manager.remove(removePeca);
+		manager.getTransaction().commit();
 	}
 
-	public boolean realizaVenda(PecasPojo pecasPojo, int quantidadeDesejada) {
+	public void realizaVenda(String codigoBarra, int quantidadeDesejada) {
 
-		String sql = "update pecas set quantidade_estoque = ? where codigo_barra = ?";
+		Pecas peca = manager.find(Pecas.class, codigoBarra);
 
-		try {
-			PreparedStatement stmt = conn.prepareStatement(sql);
-
-			stmt.setInt(1, pecasPojo.getQuantidadeEstoque() - quantidadeDesejada);
-			stmt.setString(2, pecasPojo.getCodigoBarra());
-
-			stmt.execute();
-			stmt.close();
-			
-			System.out.println("\nVenda realizada com sucesso!\n");
-
-		} catch (SQLException e) {
-			System.out.println("\nErro ao realizar venda. Verifique os dados informados\n");
-			System.out.println(e.getMessage());
-			return false;
-		}
-		return true;
-	}
-
-	public void arquivoVendas(List<PecasPojo> relatorioVendas) {
 		
+		int quantidadeEstoque = peca.getQuantidadeEstoque();
+
+		int estoqueAtualizado = quantidadeEstoque - quantidadeDesejada;
+		
+		peca.setQuantidadeEstoque(estoqueAtualizado);
+		
+		manager.getTransaction().begin();
+		manager.merge(peca);
+		manager.getTransaction().commit();
+
+		System.out.println("\nVenda realizada com sucesso!");
+
+	}
+
+	public void arquivoVendas(List<Pecas> relatorioVendas) {
+
 		double totalVendas = 0;
 		String nomeArquivo = "relatorioVendas_dia_" + Calendar.getInstance().get(Calendar.DAY_OF_MONTH) + ".txt";
-		
+
 		try {
 			FileWriter writer = new FileWriter(nomeArquivo);
-			
+
 			writer.write("Vendas - Dia " + Calendar.getInstance().get(Calendar.DAY_OF_MONTH));
 			writer.write("\n\n");
-			
-			for (PecasPojo pecasPojo : relatorioVendas) {
-				
-				writer.append(String.format(" Codigo de Barras = " + pecasPojo.getCodigoBarra() + "/ Nome = " + pecasPojo.getNome()
-				+ "/ Quantidade = " + pecasPojo.getQuantidadeEstoque() + "/ Valor =  " + pecasPojo.getPrecoVenda()));
-				
+
+			for (Pecas pecasPojo : relatorioVendas) {
+
+				writer.append(String.format(" Codigo de Barras = " + pecasPojo.getCodigoBarra() + "/ Nome = "
+						+ pecasPojo.getNome() + "/ Quantidade = " + pecasPojo.getQuantidadeEstoque() + "/ Valor =  "
+						+ pecasPojo.getPrecoVenda()));
+
 				writer.write("\n");
-				
+
 				totalVendas += pecasPojo.getPrecoVenda();
 			}
-			
+
 			writer.append(String.format("\nTotal de vendas: %.2f", totalVendas));
-			
+
 			writer.close();
-			
+
 			System.out.println("\nArquivo registrado com sucesso!\n");
-			
+
 		} catch (IOException e) {
 			System.out.println("\nNão foi possível registrar as informações em Arquivo. Tente novamente!");
 			System.out.println(e.getMessage());
 		}
-		
-		
+
 	}
 
 }
+
+//}
+/*
+ * private Connection conn; public PecasDAO() { this.conn = new
+ * ConnectionFactory().getConnection(); }
+ * 
+ * public void cadastrarPeca(Pecas pecas) {
+ * 
+ * String sql = "insert into pecas" +
+ * "(codigo_barra, nome, modelo_carro, fabricante, preço_custo," +
+ * " preço_venda, quantidade_estoque, categoria)" +
+ * "values(?, ?, ?, ?, ?, ?, ?, ?)";
+ * 
+ * try { PreparedStatement stmt = conn.prepareStatement(sql);
+ * 
+ * stmt.setString(1, pecas.getCodigoBarra()); stmt.setString(2,
+ * pecas.getNome()); stmt.setString(3, pecas.getModeloCarro());
+ * stmt.setString(4, pecas.getFabricante()); stmt.setFloat(5,
+ * pecas.getPrecoCusto()); stmt.setFloat(6, pecas.getPrecoVenda());
+ * stmt.setInt(7, pecas.getQuantidadeEstoque()); stmt.setString(8,
+ * pecas.getCategoria());
+ * 
+ * stmt.execute(); stmt.close();
+ * System.out.println("\nPeça adicionada com sucesso!\n");
+ * 
+ * } catch (SQLException e) {
+ * 
+ * System.out.println(
+ * "\nNão foi possível cadastrar a peça. Verifique se o dados foram inseridos corretamente.\n "
+ * ); System.out.println(e.getMessage()); } }
+ * 
+ * public Pecas consultarPecaPorCodigoBarra(String codigoBarra) {
+ * 
+ * Pecas peca = new Pecas();
+ * 
+ * String sql = "select * from pecas where codigo_barra = ?";
+ * 
+ * try { PreparedStatement stmt = conn.prepareStatement(sql);
+ * 
+ * stmt.setString(1, codigoBarra);
+ * 
+ * ResultSet rs = stmt.executeQuery();
+ * 
+ * while (rs.next()) {
+ * 
+ * peca.setCodigoBarra(rs.getString("codigo_barra"));
+ * peca.setNome(rs.getString("nome"));
+ * peca.setModeloCarro(rs.getString("modelo_carro"));
+ * peca.setFabricante(rs.getString("fabricante"));
+ * peca.setPrecoCusto(rs.getFloat("preço_custo"));
+ * peca.setPrecoVenda(rs.getFloat("preço_venda"));
+ * peca.setQuantidadeEstoque(rs.getInt("quantidade_estoque"));
+ * peca.setCategoria(rs.getString("categoria")); }
+ * 
+ * } catch (SQLException e) {
+ * 
+ * System.out.
+ * println("\nO código de barras informado é inválido ou ocorreu um erro na busca\n"
+ * ); System.out.println(e.getMessage()); } return peca; }
+ * 
+ * public List<Pecas> listarPecasEstoque() {
+ * 
+ * List<Pecas> listaEstoque = new ArrayList<Pecas>();
+ * 
+ * String sql = "select * from pecas ";
+ * 
+ * try { PreparedStatement stmt = conn.prepareStatement(sql);
+ * 
+ * ResultSet rs = stmt.executeQuery();
+ * 
+ * while (rs.next()) {
+ * 
+ * Pecas estoque = new Pecas();
+ * 
+ * estoque.setCodigoBarra(rs.getString("codigo_barra"));
+ * estoque.setNome(rs.getString("nome"));
+ * estoque.setModeloCarro(rs.getString("modelo_carro"));
+ * estoque.setFabricante(rs.getString("fabricante"));
+ * estoque.setPrecoCusto(rs.getFloat("preço_custo"));
+ * estoque.setPrecoVenda(rs.getFloat("preço_venda"));
+ * estoque.setQuantidadeEstoque(rs.getInt("quantidade_estoque"));
+ * estoque.setCategoria(rs.getString("categoria")); listaEstoque.add(estoque); }
+ * 
+ * } catch (SQLException e) {
+ * 
+ * System.out.println("\nErro ao listar as peças em estoque. Tente novamente!\n"
+ * ); System.out.println(e.getMessage()); }
+ * 
+ * return listaEstoque;
+ * 
+ * }
+ * 
+ * public List<Pecas> listarPecaPorLetra(String letra) { List<Pecas> nomePecas =
+ * new ArrayList<Pecas>(); String sql =
+ * "select * from  pecas where nome like ? ";
+ * 
+ * try { PreparedStatement stmt = conn.prepareStatement(sql); stmt.setString(1,
+ * letra + "%");
+ * 
+ * ResultSet rs = stmt.executeQuery();
+ * 
+ * while (rs.next()) {
+ * 
+ * Pecas pecas = new Pecas();
+ * 
+ * pecas.setCodigoBarra(rs.getString("codigo_barra"));
+ * pecas.setNome(rs.getString("nome"));
+ * pecas.setModeloCarro(rs.getString("modelo_carro"));
+ * pecas.setFabricante(rs.getString("fabricante"));
+ * pecas.setPrecoCusto(rs.getFloat("preço_custo"));
+ * pecas.setPrecoVenda(rs.getFloat("preço_venda"));
+ * pecas.setQuantidadeEstoque(rs.getInt("quantidade_estoque"));
+ * pecas.setCategoria(rs.getString("categoria")); nomePecas.add(pecas); }
+ * 
+ * } catch (SQLException e) {
+ * 
+ * System.out.
+ * println("\nErro na busca por peça por letra inicial. Tente novamente!\n");
+ * System.out.println(e.getMessage()); }
+ * 
+ * return nomePecas;
+ * 
+ * }
+ * 
+ * public List<Pecas> listarPecaPorModelo(String modelo) {
+ * 
+ * List<Pecas> modeloCarro = new ArrayList<Pecas>();
+ * 
+ * String sql = "select * from  pecas where modelo_carro = ? ";
+ * 
+ * try { PreparedStatement stmt = conn.prepareStatement(sql);
+ * 
+ * stmt.setString(1, modelo);
+ * 
+ * ResultSet rs = stmt.executeQuery();
+ * 
+ * while (rs.next()) {
+ * 
+ * Pecas pecas = new Pecas();
+ * 
+ * pecas.setCodigoBarra(rs.getString("codigo_barra"));
+ * pecas.setNome(rs.getString("nome"));
+ * pecas.setModeloCarro(rs.getString("modelo_carro"));
+ * pecas.setFabricante(rs.getString("fabricante"));
+ * pecas.setPrecoCusto(rs.getFloat("preço_custo"));
+ * pecas.setPrecoVenda(rs.getFloat("preço_venda"));
+ * pecas.setQuantidadeEstoque(rs.getInt("quantidade_estoque"));
+ * pecas.setCategoria(rs.getString("categoria")); modeloCarro.add(pecas); }
+ * 
+ * } catch (SQLException e) {
+ * System.out.println("\nErro na busca por modelo. Tente novamente!\n");
+ * 
+ * System.out.println(e.getMessage()); }
+ * 
+ * return modeloCarro; }
+ * 
+ * public List<Pecas> listarPecaPorCategoria(String categoria) {
+ * 
+ * List<Pecas> pecaCategoria = new ArrayList<Pecas>();
+ * 
+ * String sql = "select * from  pecas where categoria = ? ";
+ * 
+ * try { PreparedStatement stmt = conn.prepareStatement(sql);
+ * 
+ * stmt.setString(1, categoria);
+ * 
+ * ResultSet rs = stmt.executeQuery();
+ * 
+ * while (rs.next()) {
+ * 
+ * Pecas pecas = new Pecas();
+ * 
+ * pecas.setCodigoBarra(rs.getString("codigo_barra"));
+ * pecas.setNome(rs.getString("nome"));
+ * pecas.setModeloCarro(rs.getString("modelo_carro"));
+ * pecas.setFabricante(rs.getString("fabricante"));
+ * pecas.setPrecoCusto(rs.getFloat("preço_custo"));
+ * pecas.setPrecoVenda(rs.getFloat("preço_venda"));
+ * pecas.setQuantidadeEstoque(rs.getInt("quantidade_estoque"));
+ * pecas.setCategoria(rs.getString("categoria")); pecaCategoria.add(pecas); }
+ * 
+ * } catch (SQLException e) {
+ * 
+ * System.out.
+ * println("\nErro ao buscar a categoria informada. Tente novamente!\n");
+ * System.out.println(e.getMessage()); }
+ * 
+ * return pecaCategoria; }
+ * 
+ * public void removerPeca(String codigoBarra) {
+ * 
+ * try { String sql = "delete from pecas where codigo_barra = ?";
+ * 
+ * PreparedStatement stmt = conn.prepareStatement(sql);
+ * 
+ * stmt.setString(1, codigoBarra);
+ * 
+ * stmt.execute(); stmt.close();
+ * 
+ * System.out.println("\nPeça removida com sucesso!");
+ * 
+ * } catch (SQLException e) { System.out.
+ * println("\nNão foi possível remover a peça. Verifique o código de barras informado\n"
+ * ); System.out.println(e.getMessage()); }
+ * 
+ * }
+ * 
+ * public boolean realizaVenda(Pecas pecasPojo, int quantidadeDesejada) {
+ * 
+ * String sql =
+ * "update pecas set quantidade_estoque = ? where codigo_barra = ?";
+ * 
+ * try { PreparedStatement stmt = conn.prepareStatement(sql);
+ * 
+ * stmt.setInt(1, pecasPojo.getQuantidadeEstoque() - quantidadeDesejada);
+ * stmt.setString(2, pecasPojo.getCodigoBarra());
+ * 
+ * stmt.execute(); stmt.close();
+ * 
+ * System.out.println("\nVenda realizada com sucesso!\n");
+ * 
+ * } catch (SQLException e) { System.out.
+ * println("\nErro ao realizar venda. Verifique os dados informados\n");
+ * System.out.println(e.getMessage()); return false; } return true; }
+ * 
+ * public void arquivoVendas(List<Pecas> relatorioVendas) {
+ * 
+ * double totalVendas = 0; String nomeArquivo = "relatorioVendas_dia_" +
+ * Calendar.getInstance().get(Calendar.DAY_OF_MONTH) + ".txt";
+ * 
+ * try { FileWriter writer = new FileWriter(nomeArquivo);
+ * 
+ * writer.write("Vendas - Dia " +
+ * Calendar.getInstance().get(Calendar.DAY_OF_MONTH)); writer.write("\n\n");
+ * 
+ * for (Pecas pecasPojo : relatorioVendas) {
+ * 
+ * writer.append(String.format(" Codigo de Barras = " +
+ * pecasPojo.getCodigoBarra() + "/ Nome = " + pecasPojo.getNome() +
+ * "/ Quantidade = " + pecasPojo.getQuantidadeEstoque() + "/ Valor =  " +
+ * pecasPojo.getPrecoVenda()));
+ * 
+ * writer.write("\n");
+ * 
+ * totalVendas += pecasPojo.getPrecoVenda(); }
+ * 
+ * writer.append(String.format("\nTotal de vendas: %.2f", totalVendas));
+ * 
+ * writer.close();
+ * 
+ * System.out.println("\nArquivo registrado com sucesso!\n");
+ * 
+ * } catch (IOException e) { System.out.
+ * println("\nNão foi possível registrar as informações em Arquivo. Tente novamente!"
+ * ); System.out.println(e.getMessage()); }
+ * 
+ * 
+ * }
+ */
