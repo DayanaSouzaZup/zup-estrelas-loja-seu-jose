@@ -94,57 +94,15 @@ public class PecasDAO {
 		manager.getTransaction().commit();
 	}
 
-	public void realizaVenda(String codigoBarra, int quantidadeDesejada) {
+	public void atualizaEstoque(String codigoBarra, int estoqueAtualizado) {
 
 		Pecas peca = manager.find(Pecas.class, codigoBarra);
 
-		
-		int quantidadeEstoque = peca.getQuantidadeEstoque();
-
-		int estoqueAtualizado = quantidadeEstoque - quantidadeDesejada;
-		
 		peca.setQuantidadeEstoque(estoqueAtualizado);
-		
+
 		manager.getTransaction().begin();
 		manager.merge(peca);
 		manager.getTransaction().commit();
-
-		System.out.println("\nVenda realizada com sucesso!");
-
-	}
-
-	public void arquivoVendas(List<Pecas> relatorioVendas) {
-
-		double totalVendas = 0;
-		String nomeArquivo = "relatorioVendas_dia_" + Calendar.getInstance().get(Calendar.DAY_OF_MONTH) + ".txt";
-
-		try {
-			FileWriter writer = new FileWriter(nomeArquivo);
-
-			writer.write("Vendas - Dia " + Calendar.getInstance().get(Calendar.DAY_OF_MONTH));
-			writer.write("\n\n");
-
-			for (Pecas pecasPojo : relatorioVendas) {
-
-				writer.append(String.format(" Codigo de Barras = " + pecasPojo.getCodigoBarra() + "/ Nome = "
-						+ pecasPojo.getNome() + "/ Quantidade = " + pecasPojo.getQuantidadeEstoque() + "/ Valor =  "
-						+ pecasPojo.getPrecoVenda()));
-
-				writer.write("\n");
-
-				totalVendas += pecasPojo.getPrecoVenda();
-			}
-
-			writer.append(String.format("\nTotal de vendas: %.2f", totalVendas));
-
-			writer.close();
-
-			System.out.println("\nArquivo registrado com sucesso!\n");
-
-		} catch (IOException e) {
-			System.out.println("\nNão foi possível registrar as informações em Arquivo. Tente novamente!");
-			System.out.println(e.getMessage());
-		}
 
 	}
 

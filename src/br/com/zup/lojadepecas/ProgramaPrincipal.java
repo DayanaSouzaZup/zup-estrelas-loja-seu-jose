@@ -10,6 +10,7 @@ import java.util.Scanner;
 import br.com.zup.DAO.PecasDAO;
 import br.com.zup.POJO.Pecas;
 import br.com.zup.connectionfactory.ConnectionFactory;
+import br.com.zup.vendasDAO.Vendas;
 
 public class ProgramaPrincipal {
 
@@ -102,7 +103,7 @@ public class ProgramaPrincipal {
 	public static void listarPecasEstoque(Scanner teclado, PecasDAO pecasDao) {
 
 		List<Pecas> estoqueBd = pecasDao.listarPecasEstoque();
-		
+
 		System.out.println("\nRelação das peças em estoque: \n");
 
 		for (Pecas listaEstoque : estoqueBd) {
@@ -153,15 +154,15 @@ public class ProgramaPrincipal {
 		opcao = teclado.next();
 
 		switch (opcao) {
-		
+
 		case "1":
-			
+
 			categoria = "Som e vídeo";
-			
+
 			List<Pecas> pecasCategoria1 = pecasDao.listarPecaPorCategoria(categoria);
-			
+
 			System.out.printf("\nRelação das peças para a categoria %s: \n\n", categoria);
-			
+
 			for (Pecas categorias : pecasCategoria1) {
 				System.out.println(categorias);
 			}
@@ -169,13 +170,13 @@ public class ProgramaPrincipal {
 			break;
 
 		case "2":
-			
+
 			categoria = "Personalização";
-			
+
 			List<Pecas> pecasCategoria2 = pecasDao.listarPecaPorCategoria(categoria);
-			
+
 			System.out.printf("\nRelação das peças para a categoria %s: \n\n", categoria);
-			
+
 			for (Pecas categorias : pecasCategoria2) {
 				System.out.println(categorias);
 			}
@@ -183,77 +184,41 @@ public class ProgramaPrincipal {
 			break;
 
 		case "3":
-			
+
 			categoria = "Perfomance";
-			
+
 			List<Pecas> pecasCategoria3 = pecasDao.listarPecaPorCategoria(categoria);
-			
+
 			System.out.printf("\nRelação das peças para a categoria %s: \n\n", categoria);
-			
+
 			for (Pecas categorias : pecasCategoria3) {
 				System.out.println(categorias);
 			}
 
 			break;
-			
+
 		}
 
 	}
 
 	public static void removerPeca(Scanner teclado, PecasDAO pecasDao) {
-		
+
 		System.out.print("\nDigite o código de barras da peça que deseja excluir: ");
 		String codigoDeBarra = teclado.next();
-		
+
 		pecasDao.removerPeca(codigoDeBarra);
 
 	}
 
-	public static List<Pecas> realizaVenda(Scanner teclado, PecasDAO pecasDao, List<Pecas> relatorioVendas, Pecas pecasPojo) {
-		
+	public static void realizaVenda(Scanner teclado, Vendas vendas) {
+
 		System.out.print("\nDigite o código de barras: ");
 		String codigoBarra = teclado.next();
-		
+
 		System.out.print("Digite a quantidade desejada: ");
 		int quantidadeDesejada = teclado.nextInt();
 
-		pecasPojo = pecasDao.consultarPecaPorCodigoBarra(codigoBarra);
-
-		while (pecasPojo.getQuantidadeEstoque() < quantidadeDesejada) {
-			System.out.println("\nNão temos a quantidade desejada em estoque. \nA quantidade disponível em estoque é de: "
-					+ pecasPojo.getQuantidadeEstoque());
-			System.out.print("\nInfome novamente a quantidade desejada: ");
-			quantidadeDesejada = teclado.nextInt();
-			pecasPojo = pecasDao.consultarPecaPorCodigoBarra(codigoBarra);
-
-		}
-
-		pecasDao.realizaVenda(codigoBarra, quantidadeDesejada);
-
-		pecasPojo.setQuantidadeEstoque(quantidadeDesejada);
-		pecasPojo.setPrecoVenda(pecasPojo.getPrecoVenda() * quantidadeDesejada);
-
-		relatorioVendas.add(pecasPojo);
-		
-		return relatorioVendas;
-
-	}
-
-	public static void imprimeRelatorioVendas(PecasDAO pecasDao, List<Pecas> relatorioVendas) {
-		
-		double valorTotal = 0;
-		
-		System.out.println("\nRelatório de vendas dia " + Calendar.getInstance().get(Calendar.DAY_OF_MONTH) + ":\n");
-		
-		for (Pecas vendas : relatorioVendas) {
-		
-			System.out.println("Codigo de Barras = " + vendas.getCodigoBarra() + " Nome = " + vendas.getNome()
-					+ " Quantidade = " + vendas.getQuantidadeEstoque() + " Valor =  " + vendas.getPrecoVenda());
-			valorTotal += vendas.getPrecoVenda();
-			
-		}
-		
-		System.out.printf("\nValor total de vendas: %.2f\n\n", valorTotal);
+		vendas.realizaVenda(teclado, quantidadeDesejada, codigoBarra);
 
 	}
 
@@ -262,6 +227,7 @@ public class ProgramaPrincipal {
 		List<Pecas> relatorioVendas = new ArrayList<Pecas>();
 		Pecas pecasPojo = new Pecas();
 		PecasDAO pecasDao = new PecasDAO();
+		Vendas vendas = new Vendas();
 		Scanner teclado = new Scanner(System.in);
 		String opcaoPrimaria = "";
 		String opcaoPecas = "";
@@ -354,15 +320,15 @@ public class ProgramaPrincipal {
 
 					case "1":
 
-						relatorioVendas = realizaVenda(teclado, pecasDao, relatorioVendas, pecasPojo);
+						realizaVenda(teclado, vendas);
 
 						break;
 
 					case "2":
 
-						imprimeRelatorioVendas(pecasDao, relatorioVendas);
+						vendas.imprimeRelatorioVendas();
 
-						pecasDao.arquivoVendas(relatorioVendas);
+						vendas.arquivoVendas();
 
 						break;
 
