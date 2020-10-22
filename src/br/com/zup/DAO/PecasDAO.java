@@ -42,8 +42,11 @@ public class PecasDAO {
 		return pecasEstoque;
 	}
 
+	
 	public List<Pecas> listarPecasEstoque() {
-
+		
+		manager.clear();
+		
 		Query query = manager.createQuery("select p from Pecas as p");
 
 		List<Pecas> listaPecas = query.getResultList();

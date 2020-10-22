@@ -1,5 +1,4 @@
 Vendas - Dia 20
 
-Codigo de Barras = 34567 | Nome = Palhetas | Quantidade = 3 | Valor =  150.0
 
-Total de vendas: 150,00
+Total de vendas: 0,00
